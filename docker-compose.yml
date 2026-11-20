@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database Service
+  db:
+    image: postgres:16-alpine
+    container_name: sea_turtle_postgres_db
+    environment:
+      POSTGRES_DB: sea_turtle_db
+      POSTGRES_USER: turtle_admin
+      POSTGRES_PASSWORD: turtle_pass_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U turtle_admin -d sea_turtle_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Web Application & Nginx/Node Server
+  sea-turtle-dss:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sea_turtle_dss_app
+    environment:
+      PORT: 80
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: sea_turtle_db
+      POSTGRES_USER: turtle_admin
+      POSTGRES_PASSWORD: turtle_pass_2026
+    ports:
+      - "80:80"
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+volumes:
+  postgres_data:

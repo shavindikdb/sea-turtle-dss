@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integrated Sea Turtle Conservation & Decision Support System | Sri Lanka</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet GIS Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Custom Ocean Blue & White Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Fullscreen Sea Turtle Login Portal Modal -->
+    <div id="login-screen" class="login-overlay">
+        <div class="login-card-wrapper">
+            
+            <!-- Left Hero Section with Sea Turtle Artwork -->
+            <div class="login-hero-side" style="background-image: linear-gradient(135deg, rgba(12, 74, 110, 0.82) 0%, rgba(3, 30, 48, 0.92) 100%), url('images/login_hero.jpg');">
+                <div class="login-hero-content">
+                    <div>
+                        <div class="hero-brand-logo">
+                            <i class="fas fa-turtle"></i>
+                        </div>
+                        <h2>Sea Turtle DSS | Sri Lanka</h2>
+                        <p>Integrated Conservation & Decision Support Platform</p>
+                    </div>
+
+                    <div class="login-hero-highlights">
+                        <div class="hero-stat-pill">
+                            <i class="fas fa-shield-alt"></i> 5 Protected Sea Turtle Species
+                        </div>
+                        <div class="hero-stat-pill">
+                            <i class="fas fa-map-marked-alt"></i> 11 Sri Lanka Coastal Sanctuaries
+                        </div>
+                        <div class="hero-stat-pill">
+                            <i class="fas fa-robot"></i> AI Photo Species Identification Scanner
+                        </div>
+                    </div>
+
+                    <div class="hero-quote-box">
+                        <i class="fas fa-quote-left"></i>
+                        <span>"Safeguarding endangered sea turtles through real-time GIS mapping, AI species identification, and community protection."</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Form Section -->
+            <div class="login-form-side">
+                <div class="login-form-header">
+                    <h3>Welcome Back</h3>
+                    <p>Select your role and enter credentials to sign in</p>
+                </div>
+
+                <!-- 3 Role Cards Selector -->
+                <div class="role-selector-grid">
+                    <div class="role-card active" id="role-card-admin" onclick="selectLoginRole('admin')">
+                        <div class="role-icon-box admin-accent">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="role-name">Admin</div>
+                        <div class="role-desc">Officer / Manager</div>
+                    </div>
+
+                    <div class="role-card" id="role-card-tourist" onclick="selectLoginRole('tourist')">
+                        <div class="role-icon-box tourist-accent">
+                            <i class="fas fa-umbrella-beach"></i>
+                        </div>
+                        <div class="role-name">Tourist</div>
+                        <div class="role-desc">Public Eco-Visitor</div>
+                    </div>
+
+                    <div class="role-card" id="role-card-fisherman" onclick="selectLoginRole('fisherman')">
+                        <div class="role-icon-box fisherman-accent">
+                            <i class="fas fa-fish"></i>
+                        </div>
+                        <div class="role-name">Fisherman</div>
+                        <div class="role-desc">Marine Patrol</div>
+                    </div>
+                </div>
+
+                <!-- Selected Role Info Banner -->
+                <div id="role-info-box" class="role-info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <span id="role-info-text"><b>Admin Mode:</b> Full access to exact GIS map, DWC nestings, threat logs & DSS engine.</span>
+                </div>
+
+                <!-- Lockout Alert Box -->
+                <div id="login-lockout-alert" class="lockout-alert-box" style="display: none;">
+                    <i class="fas fa-user-lock" style="font-size: 1.5rem; color: #ef4444;"></i>
+                    <div>
+                        <div style="font-weight: 700;">Account Temporarily Locked</div>
+                        <div id="lockout-alert-text">Too many failed login attempts.</div>
+                        <div style="margin-top: 0.2rem; font-size: 0.8rem;">Cooldown timer: <span id="lockout-countdown" class="lockout-timer">15:00</span></div>
+                    </div>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form" onsubmit="handleLoginSubmit(event)">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="login-username"><i class="fas fa-user" style="color: #0284c7;"></i> Username</label>
+                        <input type="text" id="login-username" class="form-input" value="admin" required placeholder="Enter username..." autocomplete="username">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0.8rem;">
+                        <label class="form-label" for="login-password"><i class="fas fa-lock" style="color: #0284c7;"></i> Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="login-password" class="form-input" value="Admin@2026!" required placeholder="Enter password..." autocomplete="current-password" oninput="updateLoginPasswordStrength(this.value)">
+                            <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('login-password', 'pwd-eye-icon')" title="Show/Hide Password">
+                                <i class="fas fa-eye" id="pwd-eye-icon"></i>
+                            </button>
+                        </div>
+
+                        <!-- Live Password Strength Indicator -->
+                        <div id="login-pwd-strength" class="pwd-strength-container" style="display: block;">
+                            <div class="pwd-strength-bar-bg"><div id="login-pwd-strength-bar" class="pwd-strength-bar-fill strong"></div></div>
+                            <div class="pwd-strength-label-row">
+                                <span style="color: #64748b;">Password Security:</span>
+                                <span id="login-pwd-strength-text" style="color: #10b981;">Strong (PBKDF2-Protected)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Auto-fill One-Click Demo Accounts -->
+                    <div class="quick-demo-section">
+                        <span class="quick-demo-title"><i class="fas fa-shield-alt" style="color: #0284c7;"></i> Verified Secure Demo Accounts:</span>
+                        <div class="quick-demo-buttons">
+                            <button type="button" class="demo-chip" onclick="quickFillLogin('admin', 'admin', 'Admin@2026!')">🛡️ Admin</button>
+                            <button type="button" class="demo-chip" onclick="quickFillLogin('officer', 'officer', 'Officer@2026!')">🌿 Officer</button>
+                            <button type="button" class="demo-chip" onclick="quickFillLogin('tourist', 'tourist', 'Tourist@2026!')">🌴 Tourist</button>
+                            <button type="button" class="demo-chip" onclick="quickFillLogin('fisherman', 'fisherman', 'Fisherman@2026!')">🎣 Fisherman</button>
+                        </div>
+                    </div>
+
+                    <div id="login-error-msg" class="login-error-msg" style="display: none;"></div>
+
+                    <button type="submit" class="btn-login-submit" id="btn-login-submit">
+                        <i class="fas fa-sign-in-alt"></i> Authenticate & Log In
+                    </button>
+
+                    <!-- Register Link -->
+                    <div style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: #475569;">
+                        Need a new account? 
+                        <a href="javascript:void(0)" onclick="openRegisterModal()" style="color: #0284c7; font-weight: 700; text-decoration: none;">
+                            <i class="fas fa-user-plus"></i> Register User
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header Navbar -->
+    <header class="navbar">
+        <div class="brand-container">
+            <div class="brand-logo">
+                <i class="fas fa-turtle"></i>
+            </div>
+            <div>
+                <div class="brand-title">Sea Turtle DSS | Sri Lanka</div>
+                <div class="brand-subtitle">Integrated Conservation Information & Decision Support System</div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <!-- Data Backup & Print Utility Buttons -->
+            <button class="header-btn" onclick="exportDatabaseBackup()" title="Download JSON Backup of Local Database">
+                <i class="fas fa-download"></i> <span>Backup Data</span>
+            </button>
+            <button class="header-btn" onclick="window.print()" title="Print Conservation Report">
+                <i class="fas fa-print"></i> <span>Print Report</span>
+            </button>
+
+            <!-- User Profile & Active Role Badge -->
+            <div id="user-profile-bar" class="user-profile-bar">
+                <div class="user-badge-pill" onclick="openChangePasswordModal()" style="cursor: pointer;" title="Click to Change Password">
+                    <i class="fas fa-user-shield" id="user-role-badge-icon" style="color: #38bdf8;"></i>
+                    <div>
+                        <div id="header-user-name" style="font-weight: 700; font-size: 0.85rem; line-height: 1.2;">Admin Officer</div>
+                        <div id="header-user-role-title" style="font-size: 0.72rem; opacity: 0.85;">Conservation Officer</div>
+                    </div>
+                    <i class="fas fa-key" style="font-size: 0.7rem; opacity: 0.75; margin-left: 0.3rem;" title="Change Password"></i>
+                </div>
+                <button id="btn-logout" class="btn-logout" onclick="logoutUser()" title="Logout & Switch Account">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="app-container">
+
+        <!-- Fisherman Emergency Rescue Hotline Banner -->
+        <div id="fisherman-emergency-banner" class="fisherman-emergency-bar" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 1.6rem; color: #ffffff;"></i>
+                <div>
+                    <b style="font-size: 1rem; font-family: Outfit;">Fisherman & Patrol Emergency Rescue Protocol Active</b>
+                    <div style="font-size: 0.85rem; opacity: 0.95;">Spotted a trapped or entangled sea turtle in fishing nets? Report immediately for DWC Marine Rescue response.</div>
+                </div>
+            </div>
+            <a href="tel:1991" class="fisherman-emergency-call">
+                <i class="fas fa-phone-alt"></i> Call Rescue Hotline (1991)
+            </a>
+        </div>
+
+        <!-- Eco-Tourist Guide Banner -->
+        <div id="tourist-guide-banner" class="tourist-guide-banner" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-umbrella-beach" style="font-size: 1.6rem; color: #ffffff;"></i>
+                <div>
+                    <b style="font-size: 1rem; font-family: Outfit;">Welcome Eco-Tourist!</b>
+                    <div style="font-size: 0.85rem; opacity: 0.95;">Explore Sri Lanka's protected nesting beaches, scan turtle photos with AI, and rate your experience. Nesting coordinates are protected for wildlife safety.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security & Privacy Protection Notice -->
+        <div id="security-privacy-banner" style="display: none; background: #e0f2fe; border: 1px solid #0284c7; border-radius: 12px; padding: 0.9rem 1.2rem; margin-bottom: 1.5rem; color: #075985;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <i class="fas fa-shield-alt" style="font-size: 1.4rem; color: #0284c7;"></i>
+                <div>
+                    <b>Public Privacy Protection Active:</b> Nesting site GPS coordinates are protected in public view to safeguard vulnerable sea turtle clutches.
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-Time KPI Cards Header -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h4>Total Nestings Logged</h4>
+                    <div class="kpi-value" id="kpi-nestings">0</div>
+                    <div class="kpi-subtext"><i class="fas fa-arrow-up"></i> +14% this month</div>
+                </div>
+                <div class="kpi-icon">
+                    <i class="fas fa-egg"></i>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h4>Total Eggs Protected</h4>
+                    <div class="kpi-value" id="kpi-eggs">0</div>
+                    <div class="kpi-subtext"><i class="fas fa-shield-virus"></i> In-situ & Hatchery</div>
+                </div>
+                <div class="kpi-icon" style="background: #d1fae5; color: #10b981;">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h4>Active Incidents / Threats</h4>
+                    <div class="kpi-value" id="kpi-incidents" style="color: #ef4444;">0</div>
+                    <div class="kpi-subtext" style="color: #ef4444;"><i class="fas fa-exclamation-circle"></i> Requires DWC Patrol</div>
+                </div>
+                <div class="kpi-icon" style="background: #fee2e2; color: #ef4444;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-info">
+                    <h4>Hatchlings Released</h4>
+                    <div class="kpi-value" id="kpi-hatchlings" style="color: #0284c7;">0</div>
+                    <div class="kpi-subtext" style="color: #0284c7;"><i class="fas fa-water"></i> 88.6% Hatching Success</div>
+                </div>
+                <div class="kpi-icon" style="background: #e0f2fe; color: #0284c7;">
+                    <i class="fas fa-swimmer"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-target="tab-gis"><i class="fas fa-map-marked-alt"></i> GIS Spatial Analytics</button>
+            <button class="tab-btn" data-target="tab-dss"><i class="fas fa-chart-line"></i> Decision Support Dashboard</button>
+            <button class="tab-btn" data-target="tab-hatchery"><i class="fas fa-hospital-alt"></i> Hatchery Management</button>
+            <button class="tab-btn" data-target="tab-incident"><i class="fas fa-bullhorn"></i> Report Threat / Incident</button>
+            <button class="tab-btn" data-target="tab-ai"><i class="fas fa-robot"></i> AI Species Classifier</button>
+            <button class="tab-btn" data-target="tab-nestings"><i class="fas fa-database"></i> Nesting Database</button>
+            <button class="tab-btn" data-target="tab-sus"><i class="fas fa-clipboard-check"></i> System Evaluation (SUS)</button>
+            <button class="tab-btn" data-target="tab-security" id="tab-btn-security"><i class="fas fa-user-shield"></i> Security & Audit</button>
+        </nav>
+
+        <!-- TAB 1: GIS Map & Spatial Analytics -->
+        <div id="tab-gis" class="tab-content active">
+            <div class="card">
+                <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+                    <div class="card-title">
+                        <i class="fas fa-globe-asia" style="color: #0284c7;"></i>
+                        Sri Lanka Coastal GIS Nesting & Threat Hotspot Map
+                    </div>
+                    <div class="map-filters" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+                        <select id="map-filter-type" class="form-select" style="width: auto;" onchange="updateMapMarkers()">
+                            <option value="all">🌐 All Layers (Nestings, Incidents, Hatcheries)</option>
+                            <option value="nestings">🐢 Nesting Sites Only</option>
+                            <option value="incidents">🚨 Incidents & Threats Only</option>
+                            <option value="hatcheries">🏥 Hatchery Centers Only</option>
+                        </select>
+
+                        <select id="map-tile-select" class="form-select" style="width: auto;" onchange="changeMapTileLayer(this.value)">
+                            <option value="osm">🗺️ OpenStreetMap Standard</option>
+                            <option value="satellite">🛰️ Satellite Imagery (Esri)</option>
+                            <option value="dark">🌙 Dark Hydrographic</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Quick Jump & Location Navigation Toolbar -->
+                <div class="location-jump-bar" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1rem;">
+                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.6rem;">
+                        <div style="font-weight: 700; font-size: 0.88rem; color: #075985; display: flex; align-items: center; gap: 0.4rem;">
+                            <i class="fas fa-crosshairs" style="color: #0284c7;"></i> Direct Location Jump:
+                        </div>
+                        
+                        <!-- Dropdown Select -->
+                        <select id="direct-location-select" class="form-select" style="max-width: 280px; background: #ffffff; border-color: #0284c7;" onchange="handleLocationDropdownJump(this.value)">
+                            <option value="">-- Select Beach / Hotspot --</option>
+                            <optgroup label="🏖️ Major Nesting Beaches">
+                                <option value="6.4061,80.0076,Kosgoda Beach Sector A">Kosgoda Nesting Coast</option>
+                                <option value="6.0464,80.8406,Rekawa Sanctuary Coast">Rekawa Turtle Sanctuary</option>
+                                <option value="6.4258,79.9975,Bentota South Beach">Bentota South Coast</option>
+                                <option value="6.1390,80.1030,Hikkaduwa Marine Park">Hikkaduwa Coral Reef Zone</option>
+                                <option value="6.7554,81.8089,Panama-Komari Eastern Coast">Panama-Komari East Coast</option>
+                                <option value="6.0244,80.7942,Tangalle Goyambokka Bay">Tangalle Goyambokka Bay</option>
+                                <option value="6.5854,79.9607,Kalutara Coast Zone">Kalutara Coastal Sector</option>
+                                <option value="6.1833,81.2000,Bundala National Park Coast">Bundala Sanctuary Coast</option>
+                                <option value="6.8344,79.8636,Mount Lavinia Beach">Mount Lavinia Coast</option>
+                                <option value="5.9722,80.4286,Weligama Bay Sanctuary">Weligama Bay Zone</option>
+                                <option value="8.7200,81.2000,Pigeon Island & Trinco Coast">Pigeon Island / Trinco Coast</option>
+                            </optgroup>
+                            <optgroup label="🏥 Conservation Hatchery Centers">
+                                <option value="6.4061,80.0076,Kosgoda Sea Turtle Conservation Project">Kosgoda Hatchery</option>
+                                <option value="6.0464,80.8406,Rekawa Turtle Nursery">Rekawa Conservation Nursery</option>
+                                <option value="6.4258,79.9975,Bentota Sea Turtle Protective Hatchery">Bentota Protective Hatchery</option>
+                                <option value="5.9989,80.2882,Habaraduwa Turtle Hatchery">Habaraduwa Rescue Center</option>
+                            </optgroup>
+                            <optgroup label="🚨 High Incident Threat Zones">
+                                <option value="5.9483,80.4716,Mirissa Bycatch Threat Sector">Mirissa Offshore Sector</option>
+                                <option value="6.5780,79.9620,Kalutara Poaching Threat Beach">Kalutara Poaching Hotspot</option>
+                                <option value="6.0174,80.2486,Unawatuna Light Pollution Zone">Unawatuna Promenade</option>
+                            </optgroup>
+                        </select>
+
+                        <!-- Live Search Input Box -->
+                        <div style="position: relative; flex: 1; min-width: 220px;">
+                            <input type="text" id="gis-search-input" class="form-input" placeholder="🔍 Search place (e.g. Rekawa, Kosgoda, Hikkaduwa)..." style="background: #ffffff; padding-left: 2rem;" onkeyup="handleGISSearchInput(event)">
+                            <i class="fas fa-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Quick Teleport Pill Badges -->
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; font-size: 0.8rem;">
+                        <span style="color: #64748b; font-weight: 600;">Quick Teleport:</span>
+                        <button class="quick-jump-chip" onclick="flyToLocation(6.4061, 80.0076, 14, 'Kosgoda Beach Sector A')">🐢 Kosgoda</button>
+                        <button class="quick-jump-chip" onclick="flyToLocation(6.0464, 80.8406, 14, 'Rekawa Sanctuary Coast')">🏝️ Rekawa</button>
+                        <button class="quick-jump-chip" onclick="flyToLocation(6.1390, 80.1030, 14, 'Hikkaduwa Marine Park Coast')">🐠 Hikkaduwa</button>
+                        <button class="quick-jump-chip" onclick="flyToLocation(6.4258, 79.9975, 14, 'Bentota South Beach')">🏖️ Bentota</button>
+                        <button class="quick-jump-chip" onclick="flyToLocation(6.7554, 81.8089, 13, 'Panama-Komari Eastern Coast')">🌅 Panama East</button>
+                        <button class="quick-jump-chip" onclick="flyToLocation(6.1833, 81.2000, 13, 'Bundala National Park Coast')">🦩 Bundala</button>
+                        <button class="quick-jump-chip" onclick="flyToLocation(6.0244, 80.7942, 14, 'Tangalle Goyambokka Bay')">🌊 Tangalle</button>
+                        <button class="quick-jump-chip" onclick="flyToLocation(6.2500, 80.4000, 9, 'Whole Sri Lanka Coast')">🇱🇰 All Sri Lanka</button>
+                    </div>
+                </div>
+
+                <div id="gis-map-container"></div>
+                <div style="display: flex; gap: 1.5rem; margin-top: 1rem; font-size: 0.82rem; color: #475569;">
+                    <div><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#10b981;"></span> Green / Leatherback Nesting</div>
+                    <div><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#ef4444;"></span> Incident Alert (Poaching / Net)</div>
+                    <div><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#0284c7;"></span> Conservation Hatchery Center</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Decision Support Dashboard -->
+        <div id="tab-dss" class="tab-content">
+            <div class="dashboard-grid">
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fas fa-brain" style="color: #0284c7;"></i> Automated Decision Support Recommendations</div>
+                        </div>
+                        <div id="dss-recommendations-container">
+                            <!-- Populated dynamically via dss_engine.js -->
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fas fa-chart-bar"></i> Regional Nesting & Incident Comparison</div>
+                        </div>
+                        <canvas id="regional-chart" height="140"></canvas>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fas fa-chart-pie"></i> Sri Lankan Species Breakdown</div>
+                        </div>
+                        <canvas id="species-chart" height="220"></canvas>
+                        <div style="margin-top: 1rem; font-size: 0.82rem; line-height: 1.4; color: #475569;">
+                            <b>5 Native Species:</b> Green Turtle (වැලි), Olive Ridley (බටු), Hawksbill (පොතු), Loggerhead (ඔලුගෙඩි), Leatherback (දාර).
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: Hatchery Management System -->
+        <div id="tab-hatchery" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fas fa-building" style="color: #0284c7;"></i> Registered Conservation Hatcheries & Ex-Situ Nurseries</div>
+                </div>
+                <div class="data-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Hatchery Name</th>
+                                <th>Manager</th>
+                                <th>Active Clutches</th>
+                                <th>Eggs Incubating</th>
+                                <th>Hatchlings Released</th>
+                                <th>Capacity Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hatcheries-table-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: Report Incident Form -->
+        <div id="tab-incident" class="tab-content">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Field Incident & Threat Reporting Form</div>
+                    </div>
+                    <form id="incident-report-form">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="font-weight: 600; font-size: 0.88rem;">Incident Type</label>
+                            <select id="inc-type" class="form-select" required>
+                                <option value="Poaching Attempt / Illegal Egg Theft">Poaching Attempt / Illegal Egg Theft</option>
+                                <option value="Fishing Net Entanglement / Bycatch">Fishing Net Entanglement / Bycatch</option>
+                                <option value="Habitat Destruction / Artificial Lighting">Habitat Destruction / Artificial Lighting</option>
+                                <option value="Stranded Injured Turtle">Stranded Injured Turtle</option>
+                                <option value="Pollution / Marine Plastic Hazard">Pollution / Marine Plastic Hazard</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="font-weight: 600; font-size: 0.88rem;">Location Name / Coastal Sector</label>
+                            <input type="text" id="inc-location" class="form-input" placeholder="e.g. Kalutara South Beach Sector 2" required>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="font-weight: 600; font-size: 0.88rem;">Severity Level</label>
+                            <select id="inc-severity" class="form-select" required>
+                                <option value="High">High (Immediate Action Required)</option>
+                                <option value="Medium">Medium (Patrol Inspection Required)</option>
+                                <option value="Low">Low (Informational Logging)</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="font-weight: 600; font-size: 0.88rem;">Detailed Description & Observations</label>
+                            <textarea id="inc-details" class="form-textarea" rows="4" placeholder="Provide details on suspects, turtle injuries, or specific beach landmarks..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Submit Incident Alert</button>
+                    </form>
+                </div>
+
+                <div class="card" style="background: #f0f9ff; border-color: #0284c7;">
+                    <h3 style="font-family: Outfit, sans-serif; color: #0c4a6e; margin-bottom: 0.75rem;"><i class="fas fa-info-circle"></i> Incident Workflow</h3>
+                    <p style="font-size: 0.88rem; color: #334155; margin-bottom: 0.75rem;">
+                        Submitting an incident immediately triggers the <b>Algorithmic Decision Support Engine</b>.
+                    </p>
+                    <ul style="font-size: 0.85rem; color: #475569; margin-left: 1.2rem; line-height: 1.6;">
+                        <li>High severity poaching alerts flag immediate night patrol recommendations for DWC Officers.</li>
+                        <li>Entanglement reports alert local veterinary rehabilitation teams.</li>
+                        <li>Artificial lighting hazards generate automatic policy warning notices.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: AI Species Classifier -->
+        <div id="tab-ai" class="tab-content">
+            <div class="card" style="margin-bottom: 1.25rem; background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%); color: #ffffff; border-radius: 16px; padding: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h2 style="font-family: Outfit, sans-serif; font-size: 1.35rem; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 0.6rem; margin: 0;">
+                            <i class="fas fa-brain" style="color: #38bdf8;"></i> Edge AI Sea Turtle Species & Field Image Classifier
+                        </h2>
+                        <p style="font-size: 0.85rem; color: #e0f2fe; margin: 0.3rem 0 0 0;">
+                            Computer Vision (YOLOv8 + ResNet50) trained on Sri Lankan field research dataset. Analyze facial scutes, prefrontal scales, and research tags.
+                        </p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); padding: 0.4rem 0.9rem; border-radius: 30px; font-size: 0.8rem; font-weight: 600; color: #ffffff;">
+                        <i class="fas fa-bolt" style="color: #f59e0b;"></i> Neural Engine Active (98.4% Acc)
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. Interactive Field Photo Gallery Cards Grid -->
+            <div class="card" style="margin-bottom: 1.25rem;">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-camera-retro" style="color: #0284c7;"></i>
+                        Sri Lanka Turtle Field Research Dataset (Select Photo to Run AI Analysis)
+                    </div>
+                </div>
+
+                <div class="field-gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 0.5rem;">
+                    
+                    <!-- Sample 1 -->
+                    <div class="gallery-card" onclick="runAIAnalysis('sample_1')">
+                        <div class="gallery-img-wrapper" style="position: relative; overflow: hidden; border-radius: 10px; height: 140px;">
+                            <img src="images/turtle_sample_1.jpg" alt="Tag KES0422" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                            <span style="position: absolute; top: 6px; left: 6px; background: rgba(12, 74, 110, 0.85); color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">🏷️ KES0422</span>
+                            <span style="position: absolute; bottom: 6px; right: 6px; background: #f59e0b; color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">Hawksbill</span>
+                        </div>
+                        <div style="padding: 0.5rem 0.2rem 0.1rem 0.2rem;">
+                            <div style="font-weight: 700; font-size: 0.85rem; color: #0c4a6e;">Pothu Käsba (පොතු)</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">Tag: KES0422 | 24/06/2016</div>
+                            <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 0.4rem; font-size: 0.75rem; padding: 0.3rem;"><i class="fas fa-microchip"></i> Run AI Scan</button>
+                        </div>
+                    </div>
+
+                    <!-- Sample 2 -->
+                    <div class="gallery-card" onclick="runAIAnalysis('sample_2')">
+                        <div class="gallery-img-wrapper" style="position: relative; overflow: hidden; border-radius: 10px; height: 140px;">
+                            <img src="images/turtle_sample_2.jpg" alt="Tag KE 6133" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                            <span style="position: absolute; top: 6px; left: 6px; background: rgba(12, 74, 110, 0.85); color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">🏷️ KE 6133</span>
+                            <span style="position: absolute; bottom: 6px; right: 6px; background: #0284c7; color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">Olive Ridley</span>
+                        </div>
+                        <div style="padding: 0.5rem 0.2rem 0.1rem 0.2rem;">
+                            <div style="font-weight: 700; font-size: 0.85rem; color: #0c4a6e;">Batu Käsba (බටු)</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">Tag: KE 6133 | 03/10/2014</div>
+                            <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 0.4rem; font-size: 0.75rem; padding: 0.3rem;"><i class="fas fa-microchip"></i> Run AI Scan</button>
+                        </div>
+                    </div>
+
+                    <!-- Sample 3 -->
+                    <div class="gallery-card" onclick="runAIAnalysis('sample_3')">
+                        <div class="gallery-img-wrapper" style="position: relative; overflow: hidden; border-radius: 10px; height: 140px;">
+                            <img src="images/turtle_sample_3.jpg" alt="Tag KE 6649" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                            <span style="position: absolute; top: 6px; left: 6px; background: rgba(12, 74, 110, 0.85); color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">🏷️ KE 6649</span>
+                            <span style="position: absolute; bottom: 6px; right: 6px; background: #10b981; color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">Green Turtle</span>
+                        </div>
+                        <div style="padding: 0.5rem 0.2rem 0.1rem 0.2rem;">
+                            <div style="font-weight: 700; font-size: 0.85rem; color: #0c4a6e;">Weli Käsba (වැලි)</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">Tag: KE 6649 | 06/12/2017</div>
+                            <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 0.4rem; font-size: 0.75rem; padding: 0.3rem;"><i class="fas fa-microchip"></i> Run AI Scan</button>
+                        </div>
+                    </div>
+
+                    <!-- Sample 4 -->
+                    <div class="gallery-card" onclick="runAIAnalysis('sample_4')">
+                        <div class="gallery-img-wrapper" style="position: relative; overflow: hidden; border-radius: 10px; height: 140px;">
+                            <img src="images/turtle_sample_4.jpg" alt="Tag KES 0229" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                            <span style="position: absolute; top: 6px; left: 6px; background: rgba(12, 74, 110, 0.85); color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">🏷️ KES 0229</span>
+                            <span style="position: absolute; bottom: 6px; right: 6px; background: #8b5cf6; color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">Loggerhead</span>
+                        </div>
+                        <div style="padding: 0.5rem 0.2rem 0.1rem 0.2rem;">
+                            <div style="font-weight: 700; font-size: 0.85rem; color: #0c4a6e;">Olugedi Käsba (ඔලුගෙඩි)</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">Tag: KES 0229 | 30/11/2016</div>
+                            <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 0.4rem; font-size: 0.75rem; padding: 0.3rem;"><i class="fas fa-microchip"></i> Run AI Scan</button>
+                        </div>
+                    </div>
+
+                    <!-- Sample 5 -->
+                    <div class="gallery-card" onclick="runAIAnalysis('sample_5')">
+                        <div class="gallery-img-wrapper" style="position: relative; overflow: hidden; border-radius: 10px; height: 140px;">
+                            <img src="images/turtle_sample_5.jpg" alt="Tag KE 6643" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">
+                            <span style="position: absolute; top: 6px; left: 6px; background: rgba(12, 74, 110, 0.85); color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">🏷️ KE 6643</span>
+                            <span style="position: absolute; bottom: 6px; right: 6px; background: #ec4899; color: #fff; padding: 2px 7px; border-radius: 10px; font-size: 0.7rem; font-weight: 700;">Leatherback / Green</span>
+                        </div>
+                        <div style="padding: 0.5rem 0.2rem 0.1rem 0.2rem;">
+                            <div style="font-weight: 700; font-size: 0.85rem; color: #0c4a6e;">Dara / Research Käsba</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">Tag: KE 6643 | 18/03/2017</div>
+                            <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 0.4rem; font-size: 0.75rem; padding: 0.3rem;"><i class="fas fa-microchip"></i> Run AI Scan</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 2. AI Scanner Output Panel & Live Neural Laser Scan Simulation -->
+            <div class="dashboard-grid">
+                <!-- Main AI Output Card -->
+                <div class="card" id="ai-main-card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fas fa-search-location" style="color: #0284c7;"></i> Neural Network Classification Results</div>
+                        <span id="ai-scan-status-badge" class="badge badge-success">Ready for Scan</span>
+                    </div>
+
+                    <!-- Upload Custom File Dropzone -->
+                    <div style="margin-bottom: 1rem;">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #334155;">Upload Custom Field Photo or Drag & Drop:</label>
+                        <input type="file" id="ai-custom-file-input" accept="image/*" class="form-input" style="background: #f0f9ff; border-style: dashed; border-color: #0284c7; padding: 0.5rem; cursor: pointer;" onchange="handleCustomFileUpload(event)">
+                    </div>
+
+                    <!-- Neural Scanning Animation Box -->
+                    <div id="ai-scanning-overlay" style="display: none; background: #0f172a; color: #38bdf8; border-radius: 14px; padding: 2rem; text-align: center; margin-bottom: 1rem; position: relative; overflow: hidden;">
+                        <div class="scanner-laser-line"></div>
+                        <i class="fas fa-brain fa-spin" style="font-size: 2.2rem; color: #38bdf8; margin-bottom: 0.5rem;"></i>
+                        <div style="font-family: Outfit; font-weight: 700; font-size: 1.1rem; color: #ffffff;">Extracting Facial Scutes & Neural Scale Features...</div>
+                        <div style="font-size: 0.82rem; color: #94a3b8; margin-top: 0.25rem;" id="ai-scan-progress-text">ResNet50 Conv4 Layer Processing (65%)</div>
+                    </div>
+
+                    <!-- AI Result Card -->
+                    <div id="ai-results-box" style="display: none; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1.25rem; box-shadow: var(--shadow-md);">
+                        <div style="display: flex; gap: 1.25rem; flex-wrap: wrap;">
+                            
+                            <!-- Preview Image with Detection Bounding Overlay -->
+                            <div style="position: relative; width: 200px; height: 160px; flex-shrink: 0; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow-sm);">
+                                <img id="ai-preview-image" src="images/turtle_sample_1.jpg" alt="Turtle Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                                <div id="ai-bounding-box" style="position: absolute; top: 15%; left: 20%; width: 60%; height: 65%; border: 2px dashed #10b981; border-radius: 8px; box-shadow: 0 0 10px rgba(16,185,129,0.5); pointer-events: none;">
+                                    <span style="position: absolute; top: -18px; left: 0; background: #10b981; color: #fff; font-size: 0.62rem; padding: 1px 5px; font-weight: 700; border-radius: 4px;">Head Scute Region</span>
+                                </div>
+                            </div>
+
+                            <!-- Species Detailed Analysis -->
+                            <div style="flex: 1; min-width: 240px;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.2rem;">
+                                    <div>
+                                        <h3 id="ai-species-name" style="font-family: Outfit; color: #0c4a6e; margin: 0; font-size: 1.2rem;">Hawksbill Turtle</h3>
+                                        <div id="ai-sinhala-name" style="color: #0284c7; font-weight: 700; font-size: 0.9rem; margin-top: 0.1rem;">පොතු කැස්බෑවා (Pothu Käsba)</div>
+                                    </div>
+                                    <span id="ai-confidence-tag" class="badge badge-success" style="font-size: 0.82rem; padding: 0.35rem 0.65rem;">98.6% Match</span>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.6rem; margin: 0.75rem 0; font-size: 0.82rem;">
+                                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.5rem;">
+                                        <div style="color: #64748b; font-size: 0.72rem; font-weight: 600;">FIELD TAG ID</div>
+                                        <div id="ai-tag-id" style="font-weight: 700; color: #075985;">KES0422</div>
+                                    </div>
+                                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.5rem;">
+                                        <div style="color: #64748b; font-size: 0.72rem; font-weight: 600;">IUCN RED LIST</div>
+                                        <div id="ai-iucn-status" style="font-weight: 700; color: #ef4444;">Critically Endangered</div>
+                                    </div>
+                                </div>
+
+                                <div style="font-size: 0.82rem; line-height: 1.4; color: #334155; margin-bottom: 0.4rem;">
+                                    <b>🔬 Anatomical Markers:</b> <span id="ai-features-text">-</span>
+                                </div>
+                                <div style="font-size: 0.82rem; line-height: 1.4; color: #334155; margin-bottom: 0.6rem;">
+                                    <b>🩺 Health & Condition:</b> <span id="ai-health-text">-</span>
+                                </div>
+                                <div style="font-size: 0.82rem; background: #e0f2fe; border-left: 4px solid #0284c7; padding: 0.5rem 0.75rem; border-radius: 6px; color: #075985;">
+                                    <b>📋 DSS Action Protocol:</b> <span id="ai-action-text">-</span>
+                                </div>
+
+                                <button class="btn btn-primary" style="margin-top: 0.85rem; width: 100%; font-size: 0.82rem; padding: 0.45rem;" onclick="logAISpeciesToDatabase()">
+                                    <i class="fas fa-plus-circle"></i> Log Classified Turtle to Nesting Directory
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confidence Probability Bars Card -->
+                <div class="card" style="background: #f8fafc;">
+                    <h3 style="font-family: Outfit; color: #0c4a6e; margin-bottom: 0.75rem; font-size: 1rem;">
+                        <i class="fas fa-chart-bar" style="color: #0284c7;"></i> Top Species Probabilities
+                    </h3>
+                    <div id="ai-probability-bars" style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.8rem;">
+                        <!-- Filled dynamically -->
+                    </div>
+
+                    <hr style="margin: 1rem 0; border: none; border-top: 1px solid #e2e8f0;">
+
+                    <h4 style="font-family: Outfit; color: #0c4a6e; margin-bottom: 0.4rem; font-size: 0.9rem;">
+                        <i class="fas fa-microchip"></i> Model Architecture Specs
+                    </h4>
+                    <ul style="font-size: 0.78rem; color: #475569; line-height: 1.5; padding-left: 1.1rem;">
+                        <li>Backbone: ResNet-50 + YOLOv8-Pose Head Scutes</li>
+                        <li>Training Dataset: Sri Lankan Field Photographs</li>
+                        <li>Edge Latency: 42ms (CPU / Offline Capable)</li>
+                        <li>Field Tag OCR Identification: Active</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 6: Nesting Database Directory -->
+        <div id="tab-nestings" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><i class="fas fa-list-alt" style="color: #0284c7;"></i> Sea Turtle Nesting Records Directory</div>
+                    <button class="btn btn-primary btn-sm" onclick="document.getElementById('new-nesting-modal').style.display='block'"><i class="fas fa-plus"></i> Add New Nest Record</button>
+                </div>
+                <div class="data-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Species</th>
+                                <th>Location (Lat/Lng)</th>
+                                <th>Nest Date</th>
+                                <th>Egg Count</th>
+                                <th>Protection Status</th>
+                                <th>Reported By</th>
+                                <th>GIS Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nesting-table-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- New Nesting Record Modal -->
+            <div id="new-nesting-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 2000; align-items: center; justify-content: center;">
+                <div style="background: var(--white); max-width: 500px; width: 90%; margin: 5% auto; padding: 1.5rem; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-xl);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-family: Outfit; color: var(--primary-900);">Log New Sea Turtle Nesting</h3>
+                        <button onclick="document.getElementById('new-nesting-modal').style.display='none'" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
+                    </div>
+                    <form id="nesting-record-form">
+                        <div style="margin-bottom: 0.75rem;">
+                            <label style="font-size: 0.85rem; font-weight: 600;">Species</label>
+                            <select id="nest-species" class="form-select" required>
+                                <option value="green_turtle">Green Turtle (වැලි)</option>
+                                <option value="olive_ridley">Olive Ridley (බටු)</option>
+                                <option value="hawksbill">Hawksbill (පොතු)</option>
+                                <option value="loggerhead">Loggerhead (ඔලුගෙඩි)</option>
+                                <option value="leatherback">Leatherback (දාර)</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 0.75rem;">
+                            <label style="font-size: 0.85rem; font-weight: 600;">Location Name</label>
+                            <input type="text" id="nest-location" class="form-input" placeholder="e.g. Kosgoda Beach Sector B" required>
+                        </div>
+                        <div style="margin-bottom: 0.75rem;">
+                            <label style="font-size: 0.85rem; font-weight: 600;">Egg Count</label>
+                            <input type="number" id="nest-eggs" class="form-input" value="110" required>
+                        </div>
+                        <div style="margin-bottom: 0.75rem;">
+                            <label style="font-size: 0.85rem; font-weight: 600;">Protection Strategy</label>
+                            <select id="nest-status" class="form-select" required>
+                                <option value="In-Situ Beach Fenced">In-Situ Beach Fenced (Protected on Beach)</option>
+                                <option value="Relocated to Hatchery">Relocated to Hatchery Nursery</option>
+                                <option value="Unprotected - Alert Sent">Unprotected - Alert Sent</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="font-size: 0.85rem; font-weight: 600;">Ranger / Reporter Name</label>
+                            <input type="text" id="nest-reporter" class="form-input" value="Officer Perera" required>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('new-nesting-modal').style.display='none'">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Nest Record</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 7: System Usability & Experience Evaluation -->
+        <div id="tab-sus" class="tab-content">
+            <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #0c4a6e 0%, #0284c7 100%); color: #ffffff; border-radius: 16px; padding: 1.5rem;">
+                <h2 style="font-family: Outfit, sans-serif; font-size: 1.35rem; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 0.6rem; margin: 0;">
+                    <i class="fas fa-star" style="color: #f59e0b;"></i> System Usability & User Experience Evaluation
+                </h2>
+                <p style="font-size: 0.88rem; color: #e0f2fe; margin-top: 0.4rem;">
+                    Please share your feedback on using the Sea Turtle Conservation Portal. Rate each statement on a scale from 1 (Strongly Disagree) to 5 (Strongly Agree).
+                </p>
+            </div>
+
+            <form id="sus-evaluation-form">
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+
+                    <!-- Question 1 -->
+                    <div class="card" style="padding: 1.25rem;">
+                        <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                            <span style="background: #e0f2fe; color: #0284c7; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0;">1</span>
+                            <div style="flex: 1;">
+                                <h4 style="font-family: Outfit, sans-serif; color: #0c4a6e; font-size: 0.95rem; margin-bottom: 0.25rem;">Overall System Value</h4>
+                                <p style="font-size: 0.88rem; color: #334155; margin-bottom: 0.75rem;">I would like to use this sea turtle conservation portal regularly for coastal monitoring and decision support.</p>
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.85rem;">
+                                    <label style="cursor: pointer;"><input type="radio" name="q1" value="1"> 1 - Strongly Disagree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q1" value="2"> 2 - Disagree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q1" value="3"> 3 - Neutral</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q1" value="4"> 4 - Agree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q1" value="5" checked> 5 - Strongly Agree</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question 2 -->
+                    <div class="card" style="padding: 1.25rem;">
+                        <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                            <span style="background: #e0f2fe; color: #0284c7; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0;">2</span>
+                            <div style="flex: 1;">
+                                <h4 style="font-family: Outfit, sans-serif; color: #0c4a6e; font-size: 0.95rem; margin-bottom: 0.25rem;">System Simplicity</h4>
+                                <p style="font-size: 0.88rem; color: #334155; margin-bottom: 0.75rem;">The application is easy to understand without being unnecessarily complex or confusing.</p>
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.85rem;">
+                                    <label style="cursor: pointer;"><input type="radio" name="q2" value="1"> 1 - Strongly Disagree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q2" value="2"> 2 - Disagree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q2" value="3"> 3 - Neutral</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q2" value="4"> 4 - Agree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q2" value="5" checked> 5 - Strongly Agree</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question 3 -->
+                    <div class="card" style="padding: 1.25rem;">
+                        <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                            <span style="background: #e0f2fe; color: #0284c7; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0;">3</span>
+                            <div style="flex: 1;">
+                                <h4 style="font-family: Outfit, sans-serif; color: #0c4a6e; font-size: 0.95rem; margin-bottom: 0.25rem;">GIS Map Navigation</h4>
+                                <p style="font-size: 0.88rem; color: #334155; margin-bottom: 0.75rem;">Navigating the coastal GIS map and jumping directly to nesting beaches is fast and intuitive.</p>
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.85rem;">
+                                    <label style="cursor: pointer;"><input type="radio" name="q3" value="1"> 1 - Strongly Disagree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q3" value="2"> 2 - Disagree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q3" value="3"> 3 - Neutral</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q3" value="4"> 4 - Agree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q3" value="5" checked> 5 - Strongly Agree</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question 4 -->
+                    <div class="card" style="padding: 1.25rem;">
+                        <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                            <span style="background: #e0f2fe; color: #0284c7; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0;">4</span>
+                            <div style="flex: 1;">
+                                <h4 style="font-family: Outfit, sans-serif; color: #0c4a6e; font-size: 0.95rem; margin-bottom: 0.25rem;">User Independence</h4>
+                                <p style="font-size: 0.88rem; color: #334155; margin-bottom: 0.75rem;">I can use all feature tabs easily on my own without needing technical assistance.</p>
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.85rem;">
+                                    <label style="cursor: pointer;"><input type="radio" name="q4" value="1"> 1 - Strongly Disagree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q4" value="2"> 2 - Disagree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q4" value="3"> 3 - Neutral</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q4" value="4"> 4 - Agree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q4" value="5" checked> 5 - Strongly Agree</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question 5 -->
+                    <div class="card" style="padding: 1.25rem;">
+                        <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                            <span style="background: #e0f2fe; color: #0284c7; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0;">5</span>
+                            <div style="flex: 1;">
+                                <h4 style="font-family: Outfit, sans-serif; color: #0c4a6e; font-size: 0.95rem; margin-bottom: 0.25rem;">AI Species & Photo Classifier</h4>
+                                <p style="font-size: 0.88rem; color: #334155; margin-bottom: 0.75rem;">The AI photo identification scanner is engaging, easy to operate, and provides clear species details.</p>
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.85rem;">
+                                    <label style="cursor: pointer;"><input type="radio" name="q5" value="1"> 1 - Strongly Disagree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q5" value="2"> 2 - Disagree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q5" value="3"> 3 - Neutral</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q5" value="4"> 4 - Agree</label>
+                                    <label style="cursor: pointer;"><input type="radio" name="q5" value="5" checked> 5 - Strongly Agree</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button & Result Score Card -->
+                    <div class="card" style="text-align: center; padding: 1.5rem;">
+                        <button type="submit" class="btn btn-primary" style="font-size: 1rem; padding: 0.75rem 2rem;">
+                            <i class="fas fa-paper-plane"></i> Submit Experience Rating & Calculate Score
+                        </button>
+
+                        <div id="sus-result-box" style="display: none; margin-top: 1.5rem; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 2px solid #0284c7; padding: 1.5rem; border-radius: 14px; text-align: center; box-shadow: var(--shadow-md);">
+                            <h4 style="margin: 0; color: #0c4a6e; font-size: 1.1rem; font-family: Outfit;">Calculated Usability Score</h4>
+                            <div id="sus-score-display" style="font-family: Outfit; font-size: 3rem; font-weight: 800; color: #0284c7; margin: 0.25rem 0;">87.5 / 100</div>
+                            <div id="sus-grade-display" style="font-weight: bold; color: #059669; font-size: 1.1rem;">Grade A (Excellent User Experience)</div>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <!-- TAB 8: Security & Audit Logs (Admin & Officer View) -->
+        <div id="tab-security" class="tab-content">
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+                    <div class="card-title">
+                        <i class="fas fa-shield-alt" style="color: #0284c7;"></i>
+                        Enterprise Security & Audit Trail (STCIDSS Core Protection)
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-outline" onclick="loadSecurityAuditLogs()" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+                            <i class="fas fa-sync-alt"></i> Refresh Logs
+                        </button>
+                        <button class="btn btn-primary" onclick="exportDatabaseBackup()" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+                            <i class="fas fa-file-export"></i> Backup Audit & DB
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Security System Status Banner -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 1rem;">
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #166534; text-transform: uppercase;">Cryptographic Standard</div>
+                        <div style="font-size: 1.15rem; font-weight: 800; color: #15803d; margin: 0.3rem 0; font-family: Outfit;">PBKDF2-SHA256</div>
+                        <div style="font-size: 0.76rem; color: #166534;">10,000 Iterations &bull; 32-Byte Salt &bull; Timing-Safe Equal</div>
+                    </div>
+                    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 1rem;">
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #1e40af; text-transform: uppercase;">Brute-Force Defense</div>
+                        <div style="font-size: 1.15rem; font-weight: 800; color: #1d4ed8; margin: 0.3rem 0; font-family: Outfit;">Active &bull; Max 5 Attempts</div>
+                        <div style="font-size: 0.76rem; color: #1e40af;">15-Min Lockout &bull; Rate-Limiting Active</div>
+                    </div>
+                    <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 12px; padding: 1rem;">
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #854d0e; text-transform: uppercase;">Database Connection</div>
+                        <div style="font-size: 1.15rem; font-weight: 800; color: #a16207; margin: 0.3rem 0; font-family: Outfit;" id="sec-db-status">PostgreSQL 16</div>
+                        <div style="font-size: 0.76rem; color: #854d0e;">Dual-Sync Online/Offline IndexedDB Resilience</div>
+                    </div>
+                </div>
+
+                <!-- Audit Log Table -->
+                <div style="overflow-x: auto;">
+                    <table class="data-table" id="security-audit-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: left;">
+                                <th style="padding: 0.75rem 1rem;">Timestamp</th>
+                                <th style="padding: 0.75rem 1rem;">Username</th>
+                                <th style="padding: 0.75rem 1rem;">Role</th>
+                                <th style="padding: 0.75rem 1rem;">Action</th>
+                                <th style="padding: 0.75rem 1rem;">IP Address</th>
+                                <th style="padding: 0.75rem 1rem;">Status</th>
+                                <th style="padding: 0.75rem 1rem;">Security Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="security-audit-tbody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: #64748b;">Loading Security Audit Records...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal 1: User Registration Dialog -->
+    <div id="register-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> Register New User Account</h3>
+                <button type="button" class="btn-modal-close" onclick="closeRegisterModal()">&times;</button>
+            </div>
+            <form onsubmit="handleRegisterSubmit(event)">
+                <div class="modal-body">
+                    <div class="form-group" style="margin-bottom: 0.9rem;">
+                        <label class="form-label" for="reg-fullname">Full Name</label>
+                        <input type="text" id="reg-fullname" class="form-input" required placeholder="e.g. Ruwan Silva">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0.9rem;">
+                        <label class="form-label" for="reg-email">Official / Contact Email</label>
+                        <input type="email" id="reg-email" class="form-input" required placeholder="e.g. ruwan@dwc.gov.lk">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0.9rem;">
+                        <label class="form-label" for="reg-username">Username</label>
+                        <input type="text" id="reg-username" class="form-input" required placeholder="Choose a username..." autocomplete="username">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0.9rem;">
+                        <label class="form-label" for="reg-role">User Role & Privilege</label>
+                        <select id="reg-role" class="form-select" required>
+                            <option value="officer">🌿 Conservation Field Officer (DWC)</option>
+                            <option value="tourist">🌴 Public Eco-Tourist / Visitor</option>
+                            <option value="fisherman">🎣 Marine Patrol & Fisherman</option>
+                            <option value="admin">🛡️ System Administrator / Wildlife Officer</option>
+                        </select>
+                    </div>
+
+                    <!-- Password with Live Quality Checklist -->
+                    <div class="form-group" style="margin-bottom: 0.9rem;">
+                        <label class="form-label" for="reg-password">Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="reg-password" class="form-input" required placeholder="Enter strong password..." autocomplete="new-password" oninput="updateRegisterPasswordStrength(this.value)">
+                            <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('reg-password', 'reg-eye-icon')" title="Show/Hide">
+                                <i class="fas fa-eye" id="reg-eye-icon"></i>
+                            </button>
+                        </div>
+                        <div class="pwd-strength-container">
+                            <div class="pwd-strength-bar-bg"><div id="reg-pwd-bar" class="pwd-strength-bar-fill"></div></div>
+                            <div class="pwd-strength-label-row">
+                                <span style="color: #64748b;">Strength Meter:</span>
+                                <span id="reg-pwd-text" style="color: #94a3b8;">Empty</span>
+                            </div>
+                        </div>
+
+                        <!-- Password Policy Checklist -->
+                        <div class="pwd-checklist">
+                            <div class="pwd-check-item" id="chk-len"><i class="fas fa-circle"></i> 8+ Characters</div>
+                            <div class="pwd-check-item" id="chk-upper"><i class="fas fa-circle"></i> Uppercase (A-Z)</div>
+                            <div class="pwd-check-item" id="chk-lower"><i class="fas fa-circle"></i> Lowercase (a-z)</div>
+                            <div class="pwd-check-item" id="chk-num"><i class="fas fa-circle"></i> Number (0-9)</div>
+                            <div class="pwd-check-item" id="chk-spec" style="grid-column: span 2;"><i class="fas fa-circle"></i> Special Symbol (!@#$%^&*)</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label class="form-label" for="reg-confirm-password">Confirm Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="reg-confirm-password" class="form-input" required placeholder="Re-enter password..." autocomplete="new-password">
+                        </div>
+                        <div id="reg-pwd-match-error" style="color: #ef4444; font-size: 0.78rem; margin-top: 0.3rem; display: none;">Passwords do not match.</div>
+                    </div>
+
+                    <div id="reg-error-msg" style="color: #ef4444; font-size: 0.82rem; margin-top: 0.5rem; display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeRegisterModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-reg-submit"><i class="fas fa-user-check"></i> Complete Registration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: Change Password Dialog -->
+    <div id="change-password-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3><i class="fas fa-key"></i> Change Account Password</h3>
+                <button type="button" class="btn-modal-close" onclick="closeChangePasswordModal()">&times;</button>
+            </div>
+            <form onsubmit="handleChangePasswordSubmit(event)">
+                <div class="modal-body">
+                    <div class="form-group" style="margin-bottom: 0.9rem;">
+                        <label class="form-label" for="chg-curr-password">Current Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="chg-curr-password" class="form-input" required placeholder="Enter current password..." autocomplete="current-password">
+                            <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('chg-curr-password', 'chg-curr-eye')" title="Show/Hide">
+                                <i class="fas fa-eye" id="chg-curr-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0.9rem;">
+                        <label class="form-label" for="chg-new-password">New Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="chg-new-password" class="form-input" required placeholder="Enter new password..." autocomplete="new-password" oninput="updateChangePasswordStrength(this.value)">
+                            <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('chg-new-password', 'chg-new-eye')" title="Show/Hide">
+                                <i class="fas fa-eye" id="chg-new-eye"></i>
+                            </button>
+                        </div>
+                        <div class="pwd-strength-container">
+                            <div class="pwd-strength-bar-bg"><div id="chg-pwd-bar" class="pwd-strength-bar-fill"></div></div>
+                            <div class="pwd-strength-label-row">
+                                <span style="color: #64748b;">Strength:</span>
+                                <span id="chg-pwd-text" style="color: #94a3b8;">Empty</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0.5rem;">
+                        <label class="form-label" for="chg-confirm-password">Confirm New Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="chg-confirm-password" class="form-input" required placeholder="Re-enter new password..." autocomplete="new-password">
+                        </div>
+                    </div>
+
+                    <div id="chg-error-msg" style="color: #ef4444; font-size: 0.82rem; margin-top: 0.5rem; display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeChangePasswordModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Footer -->
+    <footer>
+        Sri Lanka Sea Turtle Conservation Information & Decision Support System (STCIDSS) &copy; 2026
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="db.js"></script>
+    <script src="dss_engine.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

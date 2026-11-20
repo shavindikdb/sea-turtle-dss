@@ -1,0 +1,12 @@
+{
+  "name": "sea-turtle-conservation-dss",
+  "version": "2.0.0",
+  "description": "Integrated Sea Turtle Conservation Information & Decision Support System (STCIDSS) - Sri Lanka",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "pg": "^8.12.0"
+  }
+}

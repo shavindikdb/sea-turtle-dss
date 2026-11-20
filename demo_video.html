@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sea Turtle DSS - LinkedIn Demo Video Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #09131d;
+            color: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px;
+        }
+        .header {
+            text-align: center;
+            max-width: 800px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 26px;
+            color: #38bdf8;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        .controls-card {
+            background: #111e2e;
+            border: 1px solid #1e3a5f;
+            border-radius: 12px;
+            padding: 16px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            max-width: 960px;
+            width: 100%;
+        }
+        .btn {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            transform: translateY(-1px);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-record {
+            background: linear-gradient(135deg, #10b981, #059669);
+            font-size: 15px;
+            padding: 12px 26px;
+        }
+        .btn-record:hover {
+            background: linear-gradient(135deg, #34d399, #10b981);
+        }
+        .btn-download-direct {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #1e293b;
+            color: #38bdf8;
+            border: 1px solid #334155;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-badge.recording {
+            background: #450a0a;
+            color: #f87171;
+            border-color: #991b1b;
+        }
+        .progress-box {
+            width: 100%;
+            background: #1e293b;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #38bdf8, #10b981);
+            transition: width 0.1s linear;
+        }
+        .download-result-box {
+            width: 100%;
+            margin-top: 10px;
+            padding: 14px 18px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .canvas-container {
+            border: 2px solid #1e3a5f;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            background: #000;
+            max-width: 100%;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            max-width: 960px;
+            height: auto;
+            aspect-ratio: 16 / 9;
+        }
+        .instructions {
+            margin-top: 24px;
+            max-width: 960px;
+            width: 100%;
+            background: #111e2e;
+            border: 1px solid #1e3a5f;
+            border-radius: 12px;
+            padding: 20px 24px;
+        }
+        .instructions h3 {
+            color: #38bdf8;
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .instructions ol {
+            padding-left: 20px;
+            color: #cbd5e1;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+        .instructions code {
+            background: #1e293b;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #38bdf8;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><i class="fas fa-video"></i> LinkedIn Demo Video Generator</h1>
+        <p>Sea Turtle Conservation Information & Decision Support System (STCIDSS) - Sri Lanka</p>
+    </div>
+
+    <div class="controls-card">
+        <button id="btn-preview" class="btn" onclick="startPreview()"><i class="fas fa-play"></i> Preview Animation</button>
+        <button id="btn-record-fast" class="btn" onclick="startRecording(8)" style="background: linear-gradient(135deg, #6366f1, #4f46e5);"><i class="fas fa-bolt"></i> Fast Render (8s)</button>
+        <button id="btn-record" class="btn btn-record" onclick="startRecording(20)"><i class="fas fa-circle-dot"></i> Full Render (20s)</button>
+        <div id="status-pill" class="status-badge"><i class="fas fa-info-circle"></i> Ready to render 1080p showcase</div>
+        
+        <div class="progress-box">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <div id="error-alert-box" style="display: none; width: 100%; margin-top: 10px; padding: 12px 16px; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; color: #fca5a5; font-size: 13px;">
+            <i class="fas fa-exclamation-triangle"></i> <span id="error-alert-text">Error</span>
+        </div>
+
+        <div id="download-result-box" class="download-result-box">
+            <div>
+                <b style="color: #10b981;"><i class="fas fa-check-circle"></i> Video Generated Successfully!</b>
+                <div style="font-size: 13px; color: #cbd5e1;">Click the button on the right to save the video file:</div>
+            </div>
+            <a id="btn-direct-download" class="btn btn-download-direct" href="#" download="sea_turtle_dss_linkedin_demo.webm">
+                <i class="fas fa-download"></i> Save Video File Now
+            </a>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="demoCanvas" width="1920" height="1080"></canvas>
+    </div>
+
+    <div class="instructions">
+        <h3><i class="fab fa-linkedin" style="color: #0ea5e9;"></i> How to use this video for LinkedIn:</h3>
+        <ol>
+            <li>Click <b>"Generate & Download Video"</b> above.</li>
+            <li>The system animates through the <b>GIS Map, AI Scanner, Decision Engine, and Enterprise Architecture</b>.</li>
+            <li>When rendering completes, the video will download automatically, or you can click the yellow <b>"Save Video File Now"</b> button.</li>
+            <li>Go to <a href="https://www.linkedin.com" target="_blank" style="color: #38bdf8; text-decoration: underline;">LinkedIn</a>, click <b>"Start a post" > "Media / Video"</b>, select the file, paste the provided caption, and publish!</li>
+        </ol>
+    </div>
+
+    <script>
+        // Polyfill roundRect for compatibility
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                if (typeof r === 'number') r = [r, r, r, r];
+                const radius = (r && r[0]) || 0;
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + w - radius, y);
+                this.quadraticCurveTo(x + w, y, x + w, y + radius);
+                this.lineTo(x + w, y + h - radius);
+                this.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+                this.lineTo(x + radius, y + h);
+                this.quadraticCurveTo(x, y + h, x, y + h - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+                return this;
+            };
+        }
+
+        const canvas = document.getElementById('demoCanvas');
+        const ctx = canvas.getContext('2d');
+        const btnPreview = document.getElementById('btn-preview');
+        const btnRecord = document.getElementById('btn-record');
+        const btnRecordFast = document.getElementById('btn-record-fast');
+        const statusPill = document.getElementById('status-pill');
+        const progressBar = document.getElementById('progress-bar');
+        const downloadResultBox = document.getElementById('download-result-box');
+        const btnDirectDownload = document.getElementById('btn-direct-download');
+        const errorAlertBox = document.getElementById('error-alert-box');
+        const errorAlertText = document.getElementById('error-alert-text');
+
+        let DURATION = 20; // Default seconds
+        const FPS = 30;
+        let TOTAL_FRAMES = DURATION * FPS;
+        let currentFrame = 0;
+        let isRunning = false;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+
+        function showError(msg) {
+            errorAlertText.innerHTML = msg;
+            errorAlertBox.style.display = 'block';
+            setStatus('<i class="fas fa-times-circle"></i> Error occurred');
+            if (btnPreview) btnPreview.disabled = false;
+            if (btnRecord) btnRecord.disabled = false;
+            if (btnRecordFast) btnRecordFast.disabled = false;
+            isRunning = false;
+        }
+
+        // Preload Images with crossOrigin
+        const images = {};
+        const imageSources = {
+            hero: 'images/login_hero.jpg',
+            sample1: 'images/turtle_sample_1.jpg',
+            sample2: 'images/turtle_sample_2.jpg',
+            sample3: 'images/turtle_sample_3.jpg',
+            sample4: 'images/turtle_sample_4.jpg',
+            sample5: 'images/turtle_sample_5.jpg'
+        };
+
+        let loadedImagesCount = 0;
+        const totalImagesToLoad = Object.keys(imageSources).length;
+
+        for (const [key, src] of Object.entries(imageSources)) {
+            images[key] = new Image();
+            images[key].crossOrigin = 'anonymous';
+            images[key].onload = () => {
+                loadedImagesCount++;
+                if (loadedImagesCount === totalImagesToLoad) {
+                    renderFrame(0);
+                }
+            };
+            images[key].onerror = () => {
+                loadedImagesCount++;
+                if (loadedImagesCount === totalImagesToLoad) {
+                    renderFrame(0);
+                }
+            };
+            images[key].src = src;
+        }
+
+        function setStatus(text, isRecording = false) {
+            statusPill.innerHTML = text;
+            if (isRecording) {
+                statusPill.classList.add('recording');
+            } else {
+                statusPill.classList.remove('recording');
+            }
+        }
+
+        function drawRoundedRect(ctx, x, y, width, height, radius, fillStyle, strokeStyle, lineWidth = 1) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            if (fillStyle) {
+                ctx.fillStyle = fillStyle;
+                ctx.fill();
+            }
+            if (strokeStyle) {
+                ctx.strokeStyle = strokeStyle;
+                ctx.lineWidth = lineWidth;
+                ctx.stroke();
+            }
+        }
+
+        function drawPill(ctx, x, y, text, icon, bgColor, textColor) {
+            ctx.font = '600 20px Inter';
+            const width = ctx.measureText(text).width + 60;
+            drawRoundedRect(ctx, x, y, width, 44, 22, bgColor, 'rgba(255,255,255,0.15)', 1.5);
+            ctx.fillStyle = textColor;
+            ctx.fillText(text, x + 24, y + 29);
+            return width;
+        }
+
+        function renderFrame(frame) {
+            const time = frame / FPS; // 0 to 24
+            const progress = frame / TOTAL_FRAMES;
+            progressBar.style.width = (progress * 100) + '%';
+
+            // Background Deep Ocean Mesh
+            const bgGrad = ctx.createLinearGradient(0, 0, 1920, 1080);
+            bgGrad.addColorStop(0, '#031424');
+            bgGrad.addColorStop(0.5, '#071f38');
+            bgGrad.addColorStop(1, '#020b14');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, 1920, 1080);
+
+            // Subtle animated grid / contour
+            ctx.strokeStyle = 'rgba(2, 132, 199, 0.08)';
+            ctx.lineWidth = 1;
+            const waveOffset = (time * 30) % 60;
+            for (let x = waveOffset; x < 1920; x += 60) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, 1080);
+                ctx.stroke();
+            }
+            for (let y = waveOffset; y < 1080; y += 60) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(1920, y);
+                ctx.stroke();
+            }
+
+            // Top Header Bar
+            drawRoundedRect(ctx, 40, 30, 1840, 75, 12, 'rgba(10, 25, 45, 0.85)', '#0284c7', 1.5);
+            ctx.font = '800 28px Outfit';
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('🐢 SEA TURTLE CONSERVATION & DECISION SUPPORT SYSTEM (STCIDSS)', 70, 78);
+
+            ctx.font = '600 18px Inter';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('Sri Lanka Coastal Sanctuaries | DIUX Research Specification', 1240, 77);
+
+            // Time routing for 4 dynamic scenes (6s each)
+            if (time < 6) {
+                renderScene1(time);
+            } else if (time < 12) {
+                renderScene2(time - 6);
+            } else if (time < 18) {
+                renderScene3(time - 12);
+            } else {
+                renderScene4(time - 18);
+            }
+
+            // Bottom Footer Status Bar
+            drawRoundedRect(ctx, 40, 990, 1840, 60, 10, 'rgba(10, 25, 45, 0.9)', '#1e3a5f', 1);
+            ctx.font = '600 18px Inter';
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('● LIVE CONSERVATION ENGINE', 70, 1027);
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('PostgreSQL 16: Connected | Security: PBKDF2-HMAC-SHA256 (10,000 iter) | Leaflet GIS: Active', 370, 1027);
+
+            const sceneNum = time < 6 ? '1/4: Platform Overview' : time < 12 ? '2/4: Coastal GIS & Zonation' : time < 18 ? '3/4: AI Species Identification' : '4/4: DSS & Architecture';
+            ctx.fillStyle = '#10b981';
+            ctx.fillText(sceneNum, 1600, 1027);
+        }
+
+        // ==========================================
+        // SCENE 1: OVERVIEW & 5 PROTECTED SPECIES
+        // ==========================================
+        function renderScene1(t) {
+            drawRoundedRect(ctx, 40, 130, 800, 830, 16, '#091a2e', '#0284c7', 1.5);
+            if (images.hero && images.hero.complete) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.roundRect(65, 155, 750, 420, 12);
+                ctx.clip();
+                ctx.drawImage(images.hero, 65, 155, 750, 420);
+                ctx.restore();
+            }
+
+            ctx.font = '800 36px Outfit';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText('Safeguarding Sri Lanka Sea Turtles', 65, 630);
+
+            ctx.font = '400 22px Inter';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('Integrated Marine Ecology GIS, AI Photo Identification', 65, 675);
+            ctx.fillText('& Automated Relocation Decision Engine (STCIDSS)', 65, 710);
+
+            drawPill(ctx, 65, 750, '🛡️ 5 Protected Species', '', '#0369a1', '#ffffff');
+            drawPill(ctx, 335, 750, '📍 11 Coastal Sanctuaries', '', '#047857', '#ffffff');
+            drawPill(ctx, 65, 820, '🤖 AI Morphology Scanner', '', '#6d28d9', '#ffffff');
+            drawPill(ctx, 360, 820, '🔒 Enterprise PBKDF2 Auth', '', '#be123c', '#ffffff');
+
+            const speciesList = [
+                { name: 'Hawksbill Turtle (Eretmochelys)', status: 'Critically Endangered (CR)', img: images.sample1, color: '#f59e0b' },
+                { name: 'Olive Ridley (Lepidochelys olivacea)', status: 'Vulnerable (VU)', img: images.sample2, color: '#0284c7' },
+                { name: 'Green Turtle (Chelonia mydas)', status: 'Endangered (EN)', img: images.sample3, color: '#10b981' },
+                { name: 'Loggerhead (Caretta caretta)', status: 'Vulnerable (VU)', img: images.sample4, color: '#8b5cf6' },
+                { name: 'Leatherback (Dermochelys coriacea)', status: 'Critically Endangered (CR)', img: images.sample5, color: '#ec4899' }
+            ];
+
+            const startY = 130;
+            const cardH = 150;
+            const gap = 20;
+
+            speciesList.forEach((sp, i) => {
+                const y = startY + i * (cardH + gap);
+                const currentX = 870;
+
+                drawRoundedRect(ctx, currentX, y, 1010, cardH, 14, '#0a1d33', sp.color, 1.5);
+
+                if (sp.img && sp.img.complete) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.roundRect(currentX + 15, y + 15, 120, 120, 10);
+                    ctx.clip();
+                    ctx.drawImage(sp.img, currentX + 15, y + 15, 120, 120);
+                    ctx.restore();
+                }
+
+                ctx.font = '700 24px Outfit';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(sp.name, currentX + 160, y + 55);
+
+                drawRoundedRect(ctx, currentX + 160, y + 75, 290, 34, 17, 'rgba(255,255,255,0.08)', sp.color, 1);
+                ctx.font = '700 16px Inter';
+                ctx.fillStyle = sp.color;
+                ctx.fillText('IUCN: ' + sp.status, currentX + 180, y + 98);
+
+                ctx.font = '500 16px Inter';
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillText('Protected under Sri Lanka Fauna & Flora Protection Ordinance', currentX + 470, y + 98);
+            });
+        }
+
+        // ==========================================
+        // SCENE 2: INTERACTIVE GIS & ZONATION
+        // ==========================================
+        function renderScene2(t) {
+            drawRoundedRect(ctx, 40, 130, 1240, 830, 16, '#061729', '#0284c7', 1.5);
+            ctx.font = '800 28px Outfit';
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('🗺️ Sri Lanka Coastal Geospatial Monitoring (Leaflet GIS)', 70, 185);
+
+            ctx.save();
+            ctx.strokeStyle = '#0284c7';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(350, 240);
+            ctx.bezierCurveTo(450, 320, 600, 380, 720, 520);
+            ctx.bezierCurveTo(790, 620, 820, 740, 740, 850);
+            ctx.bezierCurveTo(680, 910, 580, 930, 500, 910);
+            ctx.bezierCurveTo(380, 880, 280, 800, 240, 720);
+            ctx.bezierCurveTo(200, 600, 260, 350, 350, 240);
+            ctx.fillStyle = 'rgba(2, 132, 199, 0.1)';
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.font = '800 48px Outfit';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+            ctx.fillText('SRI LANKA', 420, 580);
+            ctx.restore();
+
+            const sanctuaries = [
+                { name: 'Kosgoda Beach Sector A', x: 260, y: 730, eggs: '124 Eggs', sp: 'Green Turtle', color: '#10b981' },
+                { name: 'Bentota South Coast', x: 270, y: 680, eggs: '112 Eggs', sp: 'Olive Ridley', color: '#0284c7' },
+                { name: 'Hikkaduwa Coral Reef', x: 290, y: 780, eggs: '135 Eggs', sp: 'Hawksbill', color: '#f59e0b' },
+                { name: 'Rekawa Sanctuary Coast', x: 620, y: 920, eggs: '88 Eggs', sp: 'Leatherback', color: '#ec4899' },
+                { name: 'Panama-Komari Sector', x: 800, y: 750, eggs: '118 Eggs', sp: 'Green Turtle', color: '#10b981' }
+            ];
+
+            sanctuaries.forEach((s, idx) => {
+                const pulse = Math.sin(t * 4 + idx) * 8;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, 24 + pulse, 0, Math.PI * 2);
+                ctx.strokeStyle = s.color;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = s.color;
+                ctx.fill();
+
+                const tipW = 240;
+                drawRoundedRect(ctx, s.x + 20, s.y - 45, tipW, 70, 8, 'rgba(15, 23, 42, 0.95)', s.color, 1);
+                ctx.font = '700 15px Inter';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(s.name, s.x + 32, s.y - 23);
+                ctx.font = '600 13px Inter';
+                ctx.fillStyle = s.color;
+                ctx.fillText('• ' + s.sp + ' (' + s.eggs + ')', s.x + 32, s.y - 3);
+            });
+
+            drawRoundedRect(ctx, 1310, 130, 570, 830, 16, '#0a1d33', '#0284c7', 1.5);
+            ctx.font = '800 24px Outfit';
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('⚠️ Threat Incidents & Triage', 1340, 180);
+
+            const incidents = [
+                { type: 'Poaching / Illegal Egg Theft', loc: 'Kalutara South Sand Dunes', sev: 'HIGH SEVERITY', color: '#ef4444', action: 'DWC Rapid Patrol Dispatched' },
+                { type: 'Ghost Net Entanglement', loc: 'Mirissa Sector 3 Coast', sev: 'HIGH SEVERITY', color: '#ef4444', action: 'Adult Turtle Disentangled & Released' },
+                { type: 'Artificial Beachfront Light', loc: 'Unawatuna Bay Promenade', sev: 'MEDIUM', color: '#f59e0b', action: 'Shielding Enforcement Issued' }
+            ];
+
+            incidents.forEach((inc, idx) => {
+                const y = 220 + idx * 190;
+                drawRoundedRect(ctx, 1340, y, 510, 160, 12, '#0f2942', inc.color, 1);
+                
+                ctx.font = '700 18px Inter';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(inc.type, 1365, y + 40);
+
+                drawRoundedRect(ctx, 1365, y + 55, 140, 26, 6, inc.color, null);
+                ctx.font = '800 12px Inter';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(inc.sev, 1375, y + 73);
+
+                ctx.font = '500 14px Inter';
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillText('Location: ' + inc.loc, 1365, y + 110);
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillText('Action: ' + inc.action, 1365, y + 135);
+            });
+        }
+
+        // ==========================================
+        // SCENE 3: AI SPECIES SCANNER
+        // ==========================================
+        function renderScene3(t) {
+            drawRoundedRect(ctx, 40, 130, 950, 830, 16, '#091c30', '#0284c7', 1.5);
+            ctx.font = '800 28px Outfit';
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('🔬 AI Morphology & Photo Identification Scanner', 70, 185);
+
+            if (images.sample1 && images.sample1.complete) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.roundRect(70, 220, 890, 560, 12);
+                ctx.clip();
+                ctx.drawImage(images.sample1, 70, 220, 890, 560);
+
+                const scanY = 220 + ((t * 220) % 560);
+                const scanGrad = ctx.createLinearGradient(70, scanY - 30, 70, scanY);
+                scanGrad.addColorStop(0, 'rgba(56, 189, 248, 0)');
+                scanGrad.addColorStop(1, 'rgba(56, 189, 248, 0.6)');
+                ctx.fillStyle = scanGrad;
+                ctx.fillRect(70, scanY - 30, 890, 30);
+
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(70, scanY);
+                ctx.lineTo(960, scanY);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(340, 320, 240, 240);
+
+                drawRoundedRect(ctx, 340, 280, 210, 32, 6, '#10b981', null);
+                ctx.font = '700 14px Inter';
+                ctx.fillStyle = '#0f172a';
+                ctx.fillText('PREFRONTAL SCUTES DETECTED', 348, 301);
+                ctx.restore();
+            }
+
+            drawRoundedRect(ctx, 70, 805, 890, 125, 10, '#0f2942', '#334155', 1);
+            ctx.font = '700 18px Inter';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText('Diagnostic Sample: KES0422 | Research Tagged Specimen', 95, 840);
+            ctx.font = '500 15px Inter';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('Features: Distinctive sharp hawk-like curved beak, 2 pairs of prefrontal scales, clear orbital scutes.', 95, 875);
+            ctx.fillText('Health Index: Active response, no fibropapilloma lesions detected on neck or flippers.', 95, 905);
+
+            drawRoundedRect(ctx, 1020, 130, 860, 830, 16, '#091c30', '#0284c7', 1.5);
+            ctx.font = '800 28px Outfit';
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('📊 Species Probability Breakdown', 1050, 185);
+
+            const probs = [
+                { name: 'Hawksbill Turtle (Eretmochelys imbricata)', pct: 98.6, color: '#f59e0b' },
+                { name: 'Green Turtle (Chelonia mydas)', pct: 1.1, color: '#10b981' },
+                { name: 'Olive Ridley (Lepidochelys olivacea)', pct: 0.3, color: '#0284c7' }
+            ];
+
+            probs.forEach((p, i) => {
+                const y = 230 + i * 110;
+                ctx.font = '700 20px Inter';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(p.name, 1050, y);
+
+                ctx.fillStyle = p.color;
+                ctx.fillText(p.pct + '%', 1800, y);
+
+                drawRoundedRect(ctx, 1050, y + 15, 800, 24, 12, '#1e293b', null);
+                const fillW = Math.max(10, (p.pct / 100) * 800);
+                drawRoundedRect(ctx, 1050, y + 15, fillW, 24, 12, p.color, null);
+            });
+
+            drawRoundedRect(ctx, 1050, 590, 800, 340, 14, '#0a233d', '#10b981', 1.5);
+            ctx.font = '800 24px Outfit';
+            ctx.fillStyle = '#10b981';
+            ctx.fillText('✅ CONFIRMED CLASSIFICATION: HAWKSBILL TURTLE', 1080, 640);
+
+            ctx.font = '600 18px Inter';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText('IUCN Status: Critically Endangered (CR) | Red List Global Priority', 1080, 685);
+
+            ctx.font = '400 16px Inter';
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillText('Automated Conservation Decision:', 1080, 730);
+            ctx.fillText('• High priority nest protection mandate triggered.', 1100, 765);
+            ctx.fillText('• Tagged KES0422 ingested into DWC National Conservation Registry.', 1100, 800);
+            ctx.fillText('• In-situ protective cage deployment dispatched to local ranger unit.', 1100, 835);
+        }
+
+        // ==========================================
+        // SCENE 4: DSS DECISION ENGINE & TECH STACK
+        // ==========================================
+        function renderScene4(t) {
+            drawRoundedRect(ctx, 40, 130, 900, 830, 16, '#091c30', '#0284c7', 1.5);
+            ctx.font = '800 28px Outfit';
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('⚖️ Automated Decision Support Engine (DSS)', 70, 185);
+
+            const matrixItems = [
+                { title: 'Tidal Watermark Risk', val: 'Low Tide Line (+32m Margin)', status: 'SAFE FOR IN-SITU', color: '#10b981' },
+                { title: 'Predation Risk Index', val: 'Feral Dogs & Monitor Lizards (Medium)', status: 'FENCING REQUIRED', color: '#f59e0b' },
+                { title: 'Tourist Activity Footprint', val: 'High Density Beachfront Zone', status: 'NIGHT PATROL MANDATE', color: '#0284c7' },
+                { title: 'Hatchery Capacity (Kosgoda)', val: '4,850 Eggs Incubating (68% Util)', status: 'RESERVE SLOTS AVAILABLE', color: '#10b981' }
+            ];
+
+            matrixItems.forEach((m, idx) => {
+                const y = 230 + idx * 165;
+                drawRoundedRect(ctx, 70, y, 840, 135, 12, '#0f2942', m.color, 1);
+                
+                ctx.font = '700 20px Inter';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(m.title, 95, y + 42);
+
+                ctx.font = '500 16px Inter';
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillText(m.val, 95, y + 80);
+
+                drawRoundedRect(ctx, 95, y + 95, 260, 26, 6, m.color, null);
+                ctx.font = '800 12px Inter';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(m.status, 110, y + 113);
+            });
+
+            drawRoundedRect(ctx, 970, 130, 910, 830, 16, '#091c30', '#0284c7', 1.5);
+            ctx.font = '800 28px Outfit';
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('🚀 Enterprise Full-Stack Architecture', 1000, 185);
+
+            const techStack = [
+                { name: 'Node.js & Express REST API', desc: 'Asynchronous event-driven server handling authentication, DSS triage & reporting.', color: '#22c55e' },
+                { name: 'PostgreSQL 16 Enterprise Database', desc: 'Relational persistence with DDL schema, foreign key relations & security audit logging.', color: '#3b82f6' },
+                { name: 'Leaflet GIS & Chart.js', desc: 'Client geospatial mapping, sanctuary zonation polygons & nesting trend analytics.', color: '#06b6d4' },
+                { name: 'Docker & Docker Compose', desc: 'Containerized multi-service deployment with automated healthchecks.', color: '#0284c7' },
+                { name: 'PBKDF2-HMAC-SHA256 Cryptography', desc: '10,000 iterations, 32-byte salt, constant-time verification & rate limiting.', color: '#f43f5e' }
+            ];
+
+            techStack.forEach((tech, i) => {
+                const y = 230 + i * 115;
+                drawRoundedRect(ctx, 1000, y, 850, 95, 10, '#0a233d', tech.color, 1);
+                ctx.font = '700 20px Outfit';
+                ctx.fillStyle = tech.color;
+                ctx.fillText(tech.name, 1025, y + 36);
+
+                ctx.font = '400 15px Inter';
+                ctx.fillStyle = '#cbd5e1';
+                ctx.fillText(tech.desc, 1025, y + 70);
+            });
+
+            drawRoundedRect(ctx, 1000, 830, 850, 100, 12, 'linear-gradient(135deg, #0284c7, #0f766e)', '#38bdf8', 1.5);
+            ctx.font = '800 24px Outfit';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText('⭐ Explore the Code on GitHub | Sea Turtle Conservation DSS', 1030, 875);
+            ctx.font = '500 16px Inter';
+            ctx.fillStyle = '#e0f2fe';
+            ctx.fillText('Open-source research and engineering for marine biodiversity protection.', 1030, 908);
+        }
+
+        // ==========================================
+        // ANIMATION & RECORDING ENGINE
+        // ==========================================
+        function startPreview() {
+            if (isRunning) return;
+            isRunning = true;
+            btnPreview.disabled = true;
+            btnRecord.disabled = true;
+            downloadResultBox.style.display = 'none';
+            currentFrame = 0;
+            setStatus('<i class="fas fa-play"></i> Playing preview animation...');
+
+            const interval = setInterval(() => {
+                renderFrame(currentFrame);
+                currentFrame++;
+                if (currentFrame >= TOTAL_FRAMES) {
+                    clearInterval(interval);
+                    isRunning = false;
+                    btnPreview.disabled = false;
+                    btnRecord.disabled = false;
+                    setStatus('<i class="fas fa-check-circle"></i> Preview complete');
+                }
+            }, 1000 / FPS);
+        }
+
+        function startRecording(durSeconds = 20) {
+            if (isRunning) return;
+            errorAlertBox.style.display = 'none';
+
+            try {
+                DURATION = durSeconds;
+                TOTAL_FRAMES = DURATION * FPS;
+                currentFrame = 0;
+                isRunning = true;
+                if (btnPreview) btnPreview.disabled = true;
+                if (btnRecord) btnRecord.disabled = true;
+                if (btnRecordFast) btnRecordFast.disabled = true;
+                downloadResultBox.style.display = 'none';
+                recordedChunks = [];
+
+                let stream;
+                try {
+                    stream = canvas.captureStream(FPS);
+                } catch (e) {
+                    throw new Error('Canvas captureStream failed: ' + e.message);
+                }
+
+                // Determine supported MIME type
+                let chosenMime = 'video/webm';
+                const candidates = [
+                    'video/mp4;codecs=avc1',
+                    'video/mp4',
+                    'video/webm;codecs=vp9',
+                    'video/webm;codecs=vp8',
+                    'video/webm'
+                ];
+
+                for (const cand of candidates) {
+                    if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(cand)) {
+                        chosenMime = cand;
+                        break;
+                    }
+                }
+
+                if (!window.MediaRecorder) {
+                    throw new Error('MediaRecorder is not supported in this browser. Please use Google Chrome or Microsoft Edge.');
+                }
+
+                try {
+                    mediaRecorder = new MediaRecorder(stream, { mimeType: chosenMime, videoBitsPerSecond: 4000000 });
+                } catch (e) {
+                    mediaRecorder = new MediaRecorder(stream);
+                }
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data && event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    try {
+                        const extension = chosenMime.includes('mp4') ? 'mp4' : 'webm';
+                        const filename = `sea_turtle_dss_linkedin_demo.${extension}`;
+                        const blob = new Blob(recordedChunks, { type: chosenMime });
+                        const blobUrl = URL.createObjectURL(blob);
+
+                        // Set direct download button
+                        btnDirectDownload.href = blobUrl;
+                        btnDirectDownload.download = filename;
+                        btnDirectDownload.innerHTML = `<i class="fas fa-download"></i> Save Video File (${extension.toUpperCase()})`;
+                        downloadResultBox.style.display = 'flex';
+
+                        // Attempt auto-download
+                        try {
+                            const tempA = document.createElement('a');
+                            tempA.href = blobUrl;
+                            tempA.download = filename;
+                            tempA.style.display = 'none';
+                            document.body.appendChild(tempA);
+                            tempA.click();
+                            setTimeout(() => {
+                                document.body.removeChild(tempA);
+                            }, 500);
+                        } catch (err) {
+                            console.warn('Auto download blocked:', err);
+                        }
+
+                        isRunning = false;
+                        if (btnPreview) btnPreview.disabled = false;
+                        if (btnRecord) btnRecord.disabled = false;
+                        if (btnRecordFast) btnRecordFast.disabled = false;
+                        setStatus('✅ Video Ready! Click "Save Video File Now" below.');
+                    } catch (e) {
+                        showError('Failed to build download file: ' + e.message);
+                    }
+                };
+
+                mediaRecorder.start(1000);
+                setStatus('<i class="fas fa-circle-dot"></i> Rendering video (' + DURATION + 's)...', true);
+
+                const interval = setInterval(() => {
+                    try {
+                        renderFrame(currentFrame);
+                        currentFrame++;
+
+                        const secLeft = Math.ceil((TOTAL_FRAMES - currentFrame) / FPS);
+                        setStatus('<i class="fas fa-circle-dot"></i> Rendering video (' + secLeft + 's left)...', true);
+
+                        if (currentFrame >= TOTAL_FRAMES) {
+                            clearInterval(interval);
+                            setTimeout(() => {
+                                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                                    mediaRecorder.stop();
+                                }
+                            }, 200);
+                        }
+                    } catch (loopErr) {
+                        clearInterval(interval);
+                        showError('Render loop error: ' + loopErr.message);
+                    }
+                }, 1000 / FPS);
+            } catch (initErr) {
+                showError('Recording initialization error: ' + initErr.message);
+            }
+        }
+    </script>
+</body>
+</html>
